@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azolute AI Chatbot Widget</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        #azolute-chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            z-index: 999999;
+        }
+
+        #azolute-chat-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #6366f1;
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        #azolute-chat-button:hover {
+            transform: scale(1.05);
+        }
+
+        #azolute-chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #azolute-chat-window.open {
+            display: flex;
+        }
+
+        #azolute-chat-header {
+            background: #6366f1;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-between:align-items: center;
+        }
+
+        #azolute-chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+        }
+
+        #azolute-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #f9fafb;
+        }
+
+        .azolute-message {
+            margin-bottom: 12px;
+            display: flex;
+        }
+
+        .azolute-message.user {
+            justify-content: flex-end;
+        }
+
+        .azolute-message-content {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .azolute-message.bot .azolute-message-content {
+            background: white;
+            color: #1f2937;
+        }
+
+        .azolute-message.user .azolute-message-content {
+            background: #6366f1;
+            color: white;
+        }
+
+        #azolute-chat-input-container {
+            padding: 16px;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+
+        #azolute-chat-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        #azolute-chat-input:focus {
+            border-color: #6366f1;
+        }
+
+        @media (max-width: 480px) {
+            #azolute-chat-window {
+                width: calc(100vw - 40px);
+                height: calc(100vh - 140px);
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="azolute-chat-widget">
+        <button id="azolute-chat-button">
+            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+        </button>
+
+        <div id="azolute-chat-window">
+            <div id="azolute-chat-header">
+                <div>
+                    <div style="font-weight: 600;">AI Assistant</div>
+                    <div style="font-size: 12px; opacity: 0.9;">Online</div>
+                </div>
+                <button id="azolute-chat-close">&times;</button>
+            </div>
+
+            <div id="azolute-chat-messages">
+                <div class="azolute-message bot">
+                    <div class="azolute-message-content">
+                        Hello! How can I help you today?
+                    </div>
+                </div>
+            </div>
+
+            <div id="azolute-chat-input-container">
+                <input
+                    type="text"
+                    id="azolute-chat-input"
+                    placeholder="Type your message..."
+                />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const API_URL = 'http://localhost:8000/api/v1';
+            const botId = new URLSearchParams(window.location.search).get('bot') ||
+                         document.currentScript?.getAttribute('data-bot-id');
+
+            let sessionId = null;
+            const chatButton = document.getElementById('azolute-chat-button');
+            const chatWindow = document.getElementById('azolute-chat-window');
+            const chatClose = document.getElementById('azolute-chat-close');
+            const chatMessages = document.getElementById('azolute-chat-messages');
+            const chatInput = document.getElementById('azolute-chat-input');
+
+            // Toggle chat window
+            chatButton.addEventListener('click', () => {
+                chatWindow.classList.add('open');
+                if (!sessionId) createSession();
+            });
+
+            chatClose.addEventListener('click', () => {
+                chatWindow.classList.remove('open');
+            });
+
+            // Send message
+            chatInput.addEventListener('keypress', async (e) => {
+                if (e.key === 'Enter' && chatInput.value.trim()) {
+                    const message = chatInput.value.trim();
+                    chatInput.value = '';
+
+                    addMessage(message, 'user');
+                    await sendMessage(message);
+                }
+            });
+
+            async function createSession() {
+                try {
+                    const response = await fetch(`${API_URL}/chat/session`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            bot_id: botId,
+                            source_url: window.location.href,
+                            source_page_title: document.title
+                        })
+                    });
+
+                    const data = await response.json();
+                    sessionId = data.session_id;
+                } catch (error) {
+                    console.error('Error creating session:', error);
+                }
+            }
+
+            async function sendMessage(message) {
+                if (!sessionId) await createSession();
+
+                try {
+                    const response = await fetch(`${API_URL}/chat/message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            session_id: sessionId,
+                            message: message
+                        })
+                    });
+
+                    const data = await response.json();
+                    addMessage(data.bot_response, 'bot');
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                }
+            }
+
+            function addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `azolute-message ${sender}`;
+
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'azolute-message-content';
+                contentDiv.textContent = text;
+
+                messageDiv.appendChild(contentDiv);
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        })();
+    </script>
+</body>
+</html>
