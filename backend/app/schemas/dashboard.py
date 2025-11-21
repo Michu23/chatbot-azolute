@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Any
 
 
 class DashboardStats(BaseModel):
@@ -20,5 +20,5 @@ class ConversationTrend(BaseModel):
 class DashboardAnalytics(BaseModel):
     stats: DashboardStats
     conversation_trends: List[ConversationTrend]
-    top_pages: List[Dict[str, any]]
+    top_pages: List[Dict[str, Any]]
     recent_leads: int

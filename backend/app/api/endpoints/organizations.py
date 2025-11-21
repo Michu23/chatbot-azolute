@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from python_slugify import slugify
+from slugify import slugify
 import secrets
 
 from app.core.database import get_db

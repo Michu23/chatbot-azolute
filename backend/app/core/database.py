@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -42,8 +42,12 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 # Initialize database
 async def init_db():
-    async with engine.begin() as conn:
-        # Enable pgvector extension
-        await conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
-        # Create all tables
-        await conn.run_sync(Base.metadata.create_all)
+    # Try to enable pgvector extension in a separate transaction
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+    except Exception as e:
+        print(f"Note: pgvector extension not available. RAG features will be disabled. Error: {e}")
+    
+    # Note: Tables should be created using Alembic migrations, not create_all()
+    # Run: alembic upgrade head

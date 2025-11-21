@@ -10,8 +10,10 @@ try:
     from pgvector.sqlalchemy import Vector
     VECTOR_AVAILABLE = True
 except ImportError:
-    Vector = lambda dim: LargeBinary  # Fallback type
+    # Fallback to LargeBinary when pgvector is not available
     VECTOR_AVAILABLE = False
+    def Vector(dim):
+        return LargeBinary
 
 
 class SourceType(str, enum.Enum):
