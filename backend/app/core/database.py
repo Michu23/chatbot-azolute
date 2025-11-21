@@ -8,15 +8,27 @@ from app.core.config import settings
 
 # Convert DATABASE_URL to async if needed
 database_url = settings.DATABASE_URL
+
+# Handle different database types
 if database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+elif database_url.startswith("sqlite:///"):
+    database_url = database_url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
 
-# Create async engine
-engine = create_async_engine(
-    database_url,
-    echo=settings.ENVIRONMENT == "development",
-    future=True,
-)
+# Determine if using SQLite
+is_sqlite = "sqlite" in database_url
+
+# Create async engine with appropriate settings
+engine_kwargs = {
+    "echo": settings.ENVIRONMENT == "development",
+    "future": True,
+}
+
+# SQLite needs special handling for async
+if is_sqlite:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+
+engine = create_async_engine(database_url, **engine_kwargs)
 
 # Create async session factory
 AsyncSessionLocal = sessionmaker(
@@ -42,12 +54,19 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 # Initialize database
 async def init_db():
-    # Try to enable pgvector extension in a separate transaction
-    try:
+    # Try to enable pgvector extension (PostgreSQL only)
+    if not is_sqlite:
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        except Exception as e:
+            print(f"Note: pgvector extension not available. RAG features will be disabled. Error: {e}")
+
+    # For SQLite in development, create tables directly
+    if is_sqlite:
         async with engine.begin() as conn:
-            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-    except Exception as e:
-        print(f"Note: pgvector extension not available. RAG features will be disabled. Error: {e}")
-    
-    # Note: Tables should be created using Alembic migrations, not create_all()
+            await conn.run_sync(Base.metadata.create_all)
+            print("SQLite tables created successfully")
+
+    # Note: For PostgreSQL, tables should be created using Alembic migrations
     # Run: alembic upgrade head

@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # Database
-    DATABASE_URL: str
+    # Database (defaults to SQLite for local development)
+    DATABASE_URL: str = "sqlite:///./azolute.db"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
