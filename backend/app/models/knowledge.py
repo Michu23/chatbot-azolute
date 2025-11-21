@@ -1,10 +1,17 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text, Enum as SQLEnum, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY
-from pgvector.sqlalchemy import Vector
 from app.core.database import Base
 import enum
+
+# Try to import pgvector, fallback to LargeBinary if not available
+try:
+    from pgvector.sqlalchemy import Vector
+    VECTOR_AVAILABLE = True
+except ImportError:
+    Vector = lambda dim: LargeBinary  # Fallback type
+    VECTOR_AVAILABLE = False
 
 
 class SourceType(str, enum.Enum):

@@ -54,9 +54,13 @@ def run_migrations_online() -> None:
         )
 
         with context.begin_transaction():
-            # Enable pgvector extension
-            connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-            connection.commit()
+            # Enable pgvector extension (optional - for RAG features)
+            try:
+                connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                connection.commit()
+            except Exception as e:
+                print(f"Note: pgvector extension not available. RAG features will be disabled. Error: {e}")
+                connection.rollback()
             context.run_migrations()
 
 
