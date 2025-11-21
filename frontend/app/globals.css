@@ -4,18 +4,15 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 210 40% 98%;
-  }
-
-  * {
-    @apply border-border;
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --primary: #6366f1;
+    --primary-foreground: #ffffff;
   }
 
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
   }
 }
 
