@@ -63,7 +63,7 @@ class Document(Base):
 
     # Metadata
     word_count = Column(Integer, default=0)
-    metadata = Column(Text, nullable=True)  # JSON
+    extra_data = Column(Text, nullable=True)  # JSON metadata
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -86,7 +86,7 @@ class DocumentChunk(Base):
 
     # Metadata
     token_count = Column(Integer, default=0)
-    metadata = Column(Text, nullable=True)  # JSON
+    extra_data = Column(Text, nullable=True)  # JSON metadata
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
