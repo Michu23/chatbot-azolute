@@ -1,10 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 from app.models.bot import BotPersonality, BotPosition, BotVisibility
 
 
 class BotBase(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     name: str
     personality: BotPersonality = BotPersonality.FRIENDLY
     custom_persona: Optional[str] = None
@@ -17,6 +18,7 @@ class BotCreate(BotBase):
 
 
 class BotUpdate(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     name: Optional[str] = None
     personality: Optional[BotPersonality] = None
     custom_persona: Optional[str] = None
@@ -42,6 +44,7 @@ class BotUpdate(BaseModel):
 
 
 class BotInDB(BotBase):
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
     id: int
     bot_id: str
     organization_id: int
@@ -65,9 +68,6 @@ class BotInDB(BotBase):
     is_online: bool
     created_at: datetime
     updated_at: Optional[datetime]
-
-    class Config:
-        from_attributes = True
 
 
 class Bot(BotInDB):

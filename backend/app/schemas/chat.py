@@ -1,10 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 from app.models.chat import MessageRole, SessionStatus
 
 
 class ChatMessageBase(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     role: MessageRole
     content: str
 
@@ -14,6 +15,7 @@ class ChatMessageCreate(ChatMessageBase):
 
 
 class ChatMessageInDB(ChatMessageBase):
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=())
     id: int
     session_id: int
     token_count: Optional[int]
@@ -22,9 +24,6 @@ class ChatMessageInDB(ChatMessageBase):
     used_rag: bool
     source_documents: Optional[str]
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class ChatMessage(ChatMessageInDB):
@@ -49,6 +48,7 @@ class ChatSessionUpdate(BaseModel):
 
 
 class ChatSessionInDB(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
     session_id: str
     bot_id: int
@@ -67,9 +67,6 @@ class ChatSessionInDB(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime]
     last_message_at: Optional[datetime]
-
-    class Config:
-        from_attributes = True
 
 
 class ChatSession(ChatSessionInDB):

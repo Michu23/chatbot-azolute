@@ -1,9 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import List, Dict, Any
 
 
 class DashboardStats(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
     total_conversations: int
     total_users: int
     total_messages: int
