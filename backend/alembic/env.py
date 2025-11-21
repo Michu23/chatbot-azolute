@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import engine_from_config, pool, text
 from alembic import context
 import os
 import sys
@@ -55,7 +55,8 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             # Enable pgvector extension
-            connection.execute("CREATE EXTENSION IF NOT EXISTS vector")
+            connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            connection.commit()
             context.run_migrations()
 
 
