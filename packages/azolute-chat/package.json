@@ -1,0 +1,46 @@
+{
+  "name": "azolute-chat",
+  "version": "1.0.0",
+  "description": "Embeddable AI chatbot widget for websites - Easy integration with any website including React, Vue, Angular, and vanilla JS",
+  "main": "dist/azolute-chat.js",
+  "module": "dist/azolute-chat.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "chatbot",
+    "ai",
+    "widget",
+    "chat",
+    "customer-support",
+    "live-chat",
+    "embed",
+    "azolute"
+  ],
+  "author": "Azolute AI",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Michu23/chatbot-azolute"
+  },
+  "homepage": "https://github.com/Michu23/chatbot-azolute#readme",
+  "bugs": {
+    "url": "https://github.com/Michu23/chatbot-azolute/issues"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "rollup": "^4.9.1",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
